@@ -1,0 +1,12 @@
+[package]
+name = "tnef2mime"
+version = "0.1.0"
+edition = "2021"
+default-run = "tnef2mime"
+
+[dependencies]
+codepage = { version = "0.1" }
+encoding_rs = { version = "0.8" }
+env_logger = { version = "0.10" }
+from-to-repr = { version = "0.2", features = ["from_to_other"] }
+log = { version = "0.4" }

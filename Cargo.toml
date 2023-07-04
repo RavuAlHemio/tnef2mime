@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "docx2attr_common",
+    "props_md2attr",
+    "tnef_docx2attr",
+    "tnef2mime",
+]

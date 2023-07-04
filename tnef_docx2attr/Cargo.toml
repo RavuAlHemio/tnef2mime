@@ -1,0 +1,9 @@
+[package]
+name = "tnef_docx2attr"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+docx2attr_common = { path = "../docx2attr_common" }
+once_cell = { version = "1.18" }
+regex = { version = "1.8" }
