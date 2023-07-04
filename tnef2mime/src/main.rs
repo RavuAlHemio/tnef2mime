@@ -119,6 +119,11 @@ fn run() -> i32 {
                     continue;
                 },
             };
+        } else if attribute.id == TnefAttributeId::AttachData {
+            let mut attachment = File::create("attachment.bin")
+                .expect("failed to open attachment.bin");
+            attachment.write_all(&attribute.data)
+                .expect("failed to write attachment.bin");
         } else {
             hexdump(&attribute.data, "    ");
         }
