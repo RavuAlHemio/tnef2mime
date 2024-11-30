@@ -5,3 +5,4 @@ members = [
     "tnef_docx2attr",
     "tnef2mime",
 ]
+resolver = "2"
