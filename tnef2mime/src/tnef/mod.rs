@@ -1,3 +1,4 @@
+pub(crate) mod cfb_msg;
 mod prop_enums;
 mod tnef_enums;
 
@@ -85,7 +86,7 @@ pub enum PropValue {
     Floating64(f64),
     Currency(i64),
     FloatingTime(f64),
-    ErrorCode(u64),
+    ErrorCode(u32),
     Boolean(bool),
     Object(Vec<u8>),
     Integer64(i64),
@@ -134,6 +135,7 @@ pub enum TnefReadError {
     MultipleValuesSingleType { prop_type: PropType, count: u32 },
     InvalidString { obtained: Vec<u16>, error: FromUtf16Error },
     OddStringLength { byte_length: usize },
+    InvalidPropertyType { property_type: u16 },
 }
 impl fmt::Display for TnefReadError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -157,6 +159,8 @@ impl fmt::Display for TnefReadError {
                 => write!(f, "invalid UTF-16 string: {} (obtained {:?})", error, obtained),
             Self::OddStringLength { byte_length }
                 => write!(f, "odd length {} of UTF-16 string", byte_length),
+            Self::InvalidPropertyType { property_type }
+                => write!(f, "invalid property type 0x{:04X}", property_type),
         }
     }
 }
@@ -247,7 +251,7 @@ fn decode_property<R: BufRead>(mut reader: R, encoding: &'static Encoding) -> Re
         // named property
         let mut guid_buf = [0u8; 16];
         reader.read_exact(&mut guid_buf)?;
-        let guid = Guid::from_le_bytes(&guid_buf).unwrap();
+        let guid = Guid::from_le_byte_slice(&guid_buf).unwrap();
         debug!("guid: {}", guid);
 
         let id_type_u32 = reader.read_u32_le()?;
@@ -329,8 +333,8 @@ fn decode_property<R: BufRead>(mut reader: R, encoding: &'static Encoding) -> Re
             PropValue::FloatingTime(val)
         },
         PropType::ErrorCode => {
-            let val = reader.read_u64_le()?;
-            reader.pad_to_4(8)?;
+            let val = reader.read_u32_le()?;
+            reader.pad_to_4(4)?;
             PropValue::ErrorCode(val)
         },
         PropType::Boolean => {
@@ -372,7 +376,7 @@ fn decode_property<R: BufRead>(mut reader: R, encoding: &'static Encoding) -> Re
         PropType::Guid => {
             let mut buf = [0u8; 16];
             reader.read_exact(&mut buf)?;
-            let guid = Guid::from_le_bytes(&buf).unwrap();
+            let guid = Guid::from_le_byte_slice(&buf).unwrap();
             PropValue::Guid(guid)
         },
         PropType::MultipleInteger16 => {
@@ -530,7 +534,7 @@ fn decode_property<R: BufRead>(mut reader: R, encoding: &'static Encoding) -> Re
             for _ in 0..value_count {
                 let mut buf = [0u8; 16];
                 reader.read_exact(&mut buf)?;
-                let guid = Guid::from_le_bytes(&buf).unwrap();
+                let guid = Guid::from_le_byte_slice(&buf).unwrap();
                 vals.push(guid)
             }
             PropValue::MultipleGuid(vals)

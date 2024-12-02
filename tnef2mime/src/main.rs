@@ -7,13 +7,16 @@ use std::borrow::Cow;
 use std::env;
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{Cursor, Read, Write};
+use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 
 use codepage::to_encoding;
 use encoding_rs::{Encoding, UTF_8};
 use env_logger;
 
-use crate::tnef::{decode_properties, PropTag, PropValue, read_tnef, TnefAttributeId};
+use crate::binread::BinaryReader;
+use crate::tnef::{
+    decode_properties, PropTag, PropValue, read_tnef, TnefAttributeId, TNEF_SIGNATURE,
+};
 
 
 fn hexdump(bytes: &[u8], prefix: &str) {
@@ -76,9 +79,21 @@ fn run() -> i32 {
     let mut headers = None;
     let mut body = None;
 
-    let buf_cursor = Cursor::new(&buf);
-    let tnef = read_tnef(buf_cursor)
-        .expect("failed to read TNEF");
+    let mut buf_cursor = Cursor::new(&buf);
+    let magic = buf_cursor.read_u32_le()
+        .expect("failed to read file magic");
+    buf_cursor.seek(SeekFrom::Start(0))
+        .expect("failed to seek in cursor?!");
+    let tnef = if magic == TNEF_SIGNATURE {
+        read_tnef(buf_cursor)
+            .expect("failed to read TNEF")
+    } else if magic == crate::tnef::cfb_msg::CFB_SIGNATURE_4BYTES {
+        read_cfb_msg_as_tnef(buf_cursor)
+            .expect("failed to read CFG .msg as TNEF")
+    } else {
+        panic!("unknown file format")
+    };
+
     println!("legacy key: {}", tnef.legacy_key);
     for attribute in &tnef.attributes {
         println!("attribute {:?}.{:?}", attribute.level, attribute.id);

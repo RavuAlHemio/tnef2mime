@@ -9,11 +9,7 @@ pub struct Guid {
     pub data4: [u8; 8],
 }
 impl Guid {
-    pub fn from_le_bytes(bytes: &[u8]) -> Option<Self> {
-        if bytes.len() != 16 {
-            return None;
-        }
-
+    pub fn from_le_bytes(bytes: [u8; 16]) -> Self {
         let data1 =
             ((bytes[0] as u32) << 0)
             | ((bytes[1] as u32) << 8)
@@ -33,19 +29,23 @@ impl Guid {
             bytes[12], bytes[13], bytes[14], bytes[15],
         ];
 
-        Some(Self {
+        Self {
             data1,
             data2,
             data3,
             data4,
-        })
+        }
     }
 
-    pub fn from_be_bytes(bytes: &[u8]) -> Option<Self> {
-        if bytes.len() != 16 {
-            return None;
+    pub fn from_le_byte_slice(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() == 16 {
+            Some(Self::from_le_bytes(bytes.try_into().unwrap()))
+        } else {
+            None
         }
+    }
 
+    pub fn from_be_bytes(bytes: [u8; 16]) -> Self {
         let data1 =
             ((bytes[0] as u32) << 24)
             | ((bytes[1] as u32) << 16)
@@ -65,12 +65,20 @@ impl Guid {
             bytes[12], bytes[13], bytes[14], bytes[15],
         ];
 
-        Some(Self {
+        Self {
             data1,
             data2,
             data3,
             data4,
-        })
+        }
+    }
+
+    pub fn from_be_byte_slice(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() == 16 {
+            Some(Self::from_be_bytes(bytes.try_into().unwrap()))
+        } else {
+            None
+        }
     }
 }
 impl fmt::Display for Guid {
