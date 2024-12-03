@@ -2,7 +2,10 @@ use std::io;
 
 macro_rules! declare_read {
     ($func_name:ident, $or_eof_func_name:ident, $type:ty) => {
+        #[allow(unused)]
         fn $func_name(&mut self) -> Result<$type, io::Error>;
+
+        #[allow(unused)]
         fn $or_eof_func_name(&mut self) -> Result<Option<$type>, io::Error>;
     };
 }
@@ -14,12 +17,14 @@ macro_rules! declare_read_le_be {
 }
 macro_rules! impl_read {
     ($func_name:ident, $or_eof_func_name:ident, $type:ty, $byte_count:expr, $from_bytes_func_name:ident) => {
+        #[allow(unused)]
         fn $func_name(&mut self) -> Result<$type, io::Error> {
             let mut buf = [0u8; $byte_count];
             self.read_exact(&mut buf)?;
             Ok(<$type>::$from_bytes_func_name(buf))
         }
 
+        #[allow(unused)]
         fn $or_eof_func_name(&mut self) -> Result<Option<$type>, io::Error> {
             let mut buf = [0u8; $byte_count];
 
@@ -46,11 +51,13 @@ macro_rules! impl_read_le_be {
 }
 macro_rules! impl_read_signed {
     ($signed_func:ident, $signed_func_or_eof:ident, $signed_type:ty, $unsigned_func:ident, $unsigned_func_or_eof:ident) => {
+        #[allow(unused)]
         fn $signed_func(&mut self) -> Result<$signed_type, io::Error> {
             let val = self.$unsigned_func()?;
             Ok(val as $signed_type)
         }
 
+        #[allow(unused)]
         fn $signed_func_or_eof(&mut self) -> Result<Option<$signed_type>, io::Error> {
             match self.$unsigned_func_or_eof() {
                 Ok(Some(val)) => Ok(Some(val as $signed_type)),
