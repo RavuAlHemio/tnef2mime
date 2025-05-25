@@ -7,4 +7,4 @@ Usage:
 
     cargo run -p tnef_docx2attr -- "[MS-OXTNEF]-220215.docx" > msox/src/tnef_enums.rs
 
-This application mostly only serves the `tnef2mime` build process.
+This application mostly only serves the build process of this workspace.
