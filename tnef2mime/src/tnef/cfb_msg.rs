@@ -3,9 +3,9 @@ use std::io::{BufRead, Cursor, Read, Seek};
 
 use cfb::CompoundFile;
 use log::error;
+use msox::BinaryReader;
 use uuid::Uuid;
 
-use crate::binread::BinaryReader;
 use crate::tnef::{PropTag, PropType, PropValue, TnefReadError};
 
 

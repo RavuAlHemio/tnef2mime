@@ -1,3 +1,4 @@
+mod binread;
 mod prop_enums;
 mod tnef_enums;
 
@@ -5,6 +6,7 @@ mod tnef_enums;
 use from_to_repr::from_to_other;
 use uuid::Uuid;
 
+pub use crate::binread::BinaryReader;
 pub use crate::prop_enums::PropTag;
 pub use crate::tnef_enums::{TnefAttributeId, TnefAttributeLevel};
 

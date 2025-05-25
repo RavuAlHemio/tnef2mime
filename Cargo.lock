@@ -263,6 +263,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ftdump"
+version = "0.1.0"
+dependencies = [
+ "codepage",
+ "encoding_rs",
+ "from-to-repr",
+ "msox",
+ "uuid",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"

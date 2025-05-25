@@ -8,10 +8,8 @@ use std::string::FromUtf16Error;
 use encoding_rs::Encoding;
 use from_to_repr::FromToRepr;
 use log::{debug, error, warn};
-use msox::{PropTag, PropType, PropValue, TnefAttributeId, TnefAttributeLevel};
+use msox::{BinaryReader, PropTag, PropType, PropValue, TnefAttributeId, TnefAttributeLevel};
 use uuid::Uuid;
-
-use crate::binread::BinaryReader;
 
 
 pub const TNEF_SIGNATURE: u32 = 0x223E9F78;

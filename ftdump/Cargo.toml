@@ -1,0 +1,11 @@
+[package]
+name = "ftdump"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+codepage = { version = "0.1" }
+encoding_rs = { version = "0.8" }
+from-to-repr = { version = "0.2" }
+msox = { path = "../msox" }
+uuid = { version = "1.17" }
