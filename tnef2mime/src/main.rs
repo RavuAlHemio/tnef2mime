@@ -1,5 +1,4 @@
 mod binread;
-mod guid;
 mod tnef;
 
 
@@ -12,11 +11,10 @@ use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use codepage::to_encoding;
 use encoding_rs::{Encoding, UTF_8};
 use env_logger;
+use msox::{PropTag, PropValue, TnefAttributeId};
 
 use crate::binread::BinaryReader;
-use crate::tnef::{
-    decode_properties, PropTag, PropValue, read_tnef, TnefAttributeId, TNEF_SIGNATURE,
-};
+use crate::tnef::{decode_properties, read_tnef, TNEF_SIGNATURE};
 use crate::tnef::cfb_msg::read_cfb_msg;
 
 

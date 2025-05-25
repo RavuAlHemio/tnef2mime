@@ -5,6 +5,6 @@ source file. This should make updates easier if a new version introduces new val
 
 Usage:
 
-    cargo run -p tnef_docx2attr -- "[MS-OXTNEF]-220215.docx" > tnef2mime/src/tnef/tnef_enums.rs
+    cargo run -p tnef_docx2attr -- "[MS-OXTNEF]-220215.docx" > msox/src/tnef_enums.rs
 
 This application mostly only serves the `tnef2mime` build process.

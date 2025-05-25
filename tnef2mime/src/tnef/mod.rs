@@ -1,6 +1,4 @@
 pub(crate) mod cfb_msg;
-mod prop_enums;
-mod tnef_enums;
 
 
 use std::fmt;
@@ -8,13 +6,12 @@ use std::io::{self, BufRead};
 use std::string::FromUtf16Error;
 
 use encoding_rs::Encoding;
-use from_to_repr::{from_to_other, FromToRepr};
+use from_to_repr::FromToRepr;
 use log::{debug, error, warn};
+use msox::{PropTag, PropType, PropValue, TnefAttributeId, TnefAttributeLevel};
+use uuid::Uuid;
 
 use crate::binread::BinaryReader;
-use crate::guid::Guid;
-pub use crate::tnef::prop_enums::PropTag;
-pub use crate::tnef::tnef_enums::{TnefAttributeId, TnefAttributeLevel};
 
 
 pub const TNEF_SIGNATURE: u32 = 0x223E9F78;
@@ -37,76 +34,8 @@ pub struct TnefAttribute {
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Property {
     pub tag: PropTag,
-    pub id: Option<(Guid, PropId)>,
+    pub id: Option<(Uuid, PropId)>,
     pub value: PropValue,
-}
-
-#[derive(Clone, Copy, Debug)]
-#[from_to_other(base_type = u16, derive_compare = "as_int")]
-pub enum PropType {
-    Unspecified = 0x0000,
-    Null = 0x0001,
-    Integer16 = 0x0002,
-    Integer32 = 0x0003,
-    Floating32 = 0x0004,
-    Floating64 = 0x0005,
-    Currency = 0x0006,
-    FloatingTime = 0x0007,
-    ErrorCode = 0x000A,
-    Boolean = 0x000B,
-    Object = 0x000D,
-    Integer64 = 0x0014,
-    String8 = 0x001E,
-    String = 0x001F,
-    Time = 0x0040,
-    Guid = 0x0048,
-    Binary = 0x0102,
-    MultipleInteger16 = 0x1002,
-    MultipleInteger32 = 0x1003,
-    MultipleFloating32 = 0x1004,
-    MultipleFloating64 = 0x1005,
-    MultipleCurrency = 0x1006,
-    MultipleFloatingTime = 0x1007,
-    MultipleInteger64 = 0x1014,
-    MultipleString8 = 0x101E,
-    MultipleString = 0x101F,
-    MultipleTime = 0x1040,
-    MultipleGuid = 0x1048,
-    MultipleBinary = 0x1102,
-    Other(u16),
-}
-
-#[derive(Clone, Debug, PartialEq, PartialOrd)]
-pub enum PropValue {
-    Unspecified,
-    Null,
-    Integer16(i16),
-    Integer32(i32),
-    Floating32(f32),
-    Floating64(f64),
-    Currency(i64),
-    FloatingTime(f64),
-    ErrorCode(u32),
-    Boolean(bool),
-    Object(Vec<u8>),
-    Integer64(i64),
-    String8(String),
-    String(String),
-    Time(i64),
-    Guid(Guid),
-    Binary(Vec<u8>),
-    MultipleInteger16(Vec<i16>),
-    MultipleInteger32(Vec<i32>),
-    MultipleFloating32(Vec<f32>),
-    MultipleFloating64(Vec<f64>),
-    MultipleCurrency(Vec<i64>),
-    MultipleFloatingTime(Vec<f64>),
-    MultipleInteger64(Vec<i64>),
-    MultipleString8(Vec<String>),
-    MultipleString(Vec<String>),
-    MultipleTime(Vec<i64>),
-    MultipleGuid(Vec<Guid>),
-    MultipleBinary(Vec<Vec<u8>>),
 }
 
 #[derive(Clone, Debug, Eq, FromToRepr, Hash, Ord, PartialEq, PartialOrd)]
@@ -251,7 +180,7 @@ fn decode_property<R: BufRead>(mut reader: R, encoding: &'static Encoding) -> Re
         // named property
         let mut guid_buf = [0u8; 16];
         reader.read_exact(&mut guid_buf)?;
-        let guid = Guid::from_le_byte_slice(&guid_buf).unwrap();
+        let guid = Uuid::from_slice_le(&guid_buf).unwrap();
         debug!("guid: {}", guid);
 
         let id_type_u32 = reader.read_u32_le()?;
@@ -376,7 +305,7 @@ fn decode_property<R: BufRead>(mut reader: R, encoding: &'static Encoding) -> Re
         PropType::Guid => {
             let mut buf = [0u8; 16];
             reader.read_exact(&mut buf)?;
-            let guid = Guid::from_le_byte_slice(&buf).unwrap();
+            let guid = Uuid::from_slice_le(&buf).unwrap();
             PropValue::Guid(guid)
         },
         PropType::MultipleInteger16 => {
@@ -534,7 +463,7 @@ fn decode_property<R: BufRead>(mut reader: R, encoding: &'static Encoding) -> Re
             for _ in 0..value_count {
                 let mut buf = [0u8; 16];
                 reader.read_exact(&mut buf)?;
-                let guid = Guid::from_le_byte_slice(&buf).unwrap();
+                let guid = Uuid::from_slice_le(&buf).unwrap();
                 vals.push(guid)
             }
             PropValue::MultipleGuid(vals)

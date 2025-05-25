@@ -3,9 +3,9 @@ use std::io::{BufRead, Cursor, Read, Seek};
 
 use cfb::CompoundFile;
 use log::error;
+use uuid::Uuid;
 
 use crate::binread::BinaryReader;
-use crate::guid::Guid;
 use crate::tnef::{PropTag, PropType, PropValue, TnefReadError};
 
 
@@ -42,7 +42,7 @@ pub struct Attachment {
 macro_rules! match_multiple_fixed_property_type {
     (
         $property_type:expr, $tag_u16:expr, $type_u16:expr, $value_buf:expr
-        $(, $variant:ident, $inner_type:ty, $chunk_size:expr)*
+        $(, $variant:ident, $inner_type:ty, $from_array_func:ident, $chunk_size:expr)*
         $(,)?
     ) => {
         match $property_type {
@@ -54,7 +54,7 @@ macro_rules! match_multiple_fixed_property_type {
                     }
                     let mut values = Vec::with_capacity($value_buf.len() / $chunk_size);
                     for slice in $value_buf.chunks($chunk_size) {
-                        let value = <$inner_type>::from_le_bytes(slice.try_into().unwrap());
+                        let value = <$inner_type>::$from_array_func(slice.try_into().unwrap());
                         values.push(value);
                     }
                     PropValue::$variant(values)
@@ -163,7 +163,7 @@ fn read_properties<R: BufRead + Seek>(msg: &mut CompoundFile<R>, path_prefix: &s
                             error!("GUID property {:04X}{:04X} has {} bytes (expected 16 bytes); skipping", tag_u16, type_u16, value_buf.len());
                             continue;
                         }
-                        let guid = Guid::from_le_byte_slice(&value_buf).unwrap();
+                        let guid = Uuid::from_slice_le(&value_buf).unwrap();
                         PropValue::Guid(guid)
                     },
                     PropType::Object => PropValue::Object(value_buf),
@@ -192,15 +192,15 @@ fn read_properties<R: BufRead + Seek>(msg: &mut CompoundFile<R>, path_prefix: &s
 
                 match_multiple_fixed_property_type!(
                     property_type, tag_u16, type_u16, value_buf,
-                    MultipleInteger16, i16, 2,
-                    MultipleInteger32, i32, 4,
-                    MultipleFloating32, f32, 4,
-                    MultipleFloating64, f64, 8,
-                    MultipleCurrency, i64, 8,
-                    MultipleFloatingTime, f64, 8,
-                    MultipleTime, i64, 8,
-                    MultipleGuid, Guid, 16,
-                    MultipleInteger64, i64, 8,
+                    MultipleInteger16, i16, from_le_bytes, 2,
+                    MultipleInteger32, i32, from_le_bytes, 4,
+                    MultipleFloating32, f32, from_le_bytes, 4,
+                    MultipleFloating64, f64, from_le_bytes, 8,
+                    MultipleCurrency, i64, from_le_bytes, 8,
+                    MultipleFloatingTime, f64, from_le_bytes, 8,
+                    MultipleTime, i64, from_le_bytes, 8,
+                    MultipleGuid, Uuid, from_bytes_le, 16,
+                    MultipleInteger64, i64, from_le_bytes, 8,
                 )
             },
             PropType::MultipleBinary|PropType::MultipleString8
@@ -446,10 +446,10 @@ pub fn decode_compressed_rtf(compressed: &[u8]) -> Result<Vec<u8>, RtfDecodeErro
     if compressed.len() < 16 {
         return Err(RtfDecodeError::HeaderTooShort { expected: 16, obtained: compressed.len() });
     }
-    let compressed_size = u32::from_le_bytes(compressed[0..4].try_into().unwrap());
+    let _compressed_size = u32::from_le_bytes(compressed[0..4].try_into().unwrap());
     let raw_size = u32::from_le_bytes(compressed[4..8].try_into().unwrap());
     let compression_type = u32::from_le_bytes(compressed[8..12].try_into().unwrap());
-    let crc = u32::from_le_bytes(compressed[12..16].try_into().unwrap());
+    let _crc = u32::from_le_bytes(compressed[12..16].try_into().unwrap());
 
     if compression_type == 0x414C454D {
         // "MELA", uncompressed

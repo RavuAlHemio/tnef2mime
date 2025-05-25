@@ -6,6 +6,6 @@ values.
 
 Usage:
 
-    cargo run -p props_md2attr -- office-developer-client-docs/docs/outlook/mapi [MS-OXPROPS]-210817.docx > tnef2mime/src/tnef/prop_enums.rs
+    cargo run -p props_md2attr -- office-developer-client-docs/docs/outlook/mapi [MS-OXPROPS]-210817.docx > msox/src/prop_enums.rs
 
-This application mostly only serves the `tnef2mime` build process.
+This application mostly only serves the build process of this workspace.

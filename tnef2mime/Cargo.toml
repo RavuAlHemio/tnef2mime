@@ -11,3 +11,5 @@ encoding_rs = { version = "0.8" }
 env_logger = { version = "0.10" }
 from-to-repr = { version = "0.2", features = ["from_to_other"] }
 log = { version = "0.4" }
+msox = { path = "../msox" }
+uuid = { version = "1.17" }

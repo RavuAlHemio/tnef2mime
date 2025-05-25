@@ -1,0 +1,8 @@
+[package]
+name = "msox"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+from-to-repr = { version = "0.2", features = ["from_to_other"] }
+uuid = { version = "1.17" }
