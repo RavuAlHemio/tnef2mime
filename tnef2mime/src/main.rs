@@ -151,7 +151,7 @@ fn run() -> i32 {
         }
     } else if magic == crate::tnef::cfb_msg::CFB_SIGNATURE_4BYTES {
         let msg = read_cfb_msg(buf_cursor)
-            .expect("failed to read CFG .msg as TNEF");
+            .expect("failed to read CFB .msg as TNEF");
         for property in &msg.properties {
             let mut rtf_output = false;
             if property.tag == PropTag::TagRtfCompressed {
